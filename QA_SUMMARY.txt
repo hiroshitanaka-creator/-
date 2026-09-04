@@ -1,0 +1,17 @@
+QA Summary - Haimachi Chapter 1 to Chapter 2 Save Inheritance
+
+Chapter 1:
+- node tests/validate-data.js: 0 errors / 0 warnings
+- node --check all JS modules: pass
+- standalone build: pass
+
+Chapter 2:
+- node tests/validate-data.js: 0 errors / 0 warnings
+- node tests/smoke-systems.js: pass
+- node tests/transfer-smoke.js: pass
+- node --check all JS modules: pass
+- standalone browser smoke via Playwright set_content: pass
+- inheritance screenshots captured: pass
+
+Known limitation:
+- Real iPhone Safari PWA installation requires HTTPS hosting. This environment cannot verify actual Add-to-Home-Screen behavior on a physical iPhone.

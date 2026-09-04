@@ -1,0 +1,48 @@
+{
+  "product": "灰街の巡察官と嘘の地図",
+  "chapter": "第一章「雨鐘の失踪者」",
+  "build": "chapter1-0.9.2-transfer",
+  "build_date": "2026-09-04",
+  "runtime": "HTML5 + CSS + Vanilla JavaScript + Canvas + Web Audio",
+  "external_runtime_dependencies": [],
+  "content": {
+    "maps": 6,
+    "npcs": 12,
+    "evidence": 32,
+    "deductions": 9,
+    "quests": 6,
+    "enemies": 5,
+    "endings": 8,
+    "difficulties": 3
+  },
+  "source": {
+    "gameplay_js_modules": 46,
+    "core_gameplay_lines": 8561,
+    "standalone_bytes": 470348,
+    "standalone_sha256": "40acf9f93294f65407f2b7b95bcbe505b73c48b58e58db54494c9a0de89f992b"
+  },
+  "qa": {
+    "javascript_syntax": "pass: node --check all js modules",
+    "data_validation": "0 errors / 0 warnings",
+    "standalone_build": "pass",
+    "transfer_smoke": "chapter1 transfer export path built and syntax checked",
+    "pwa_files": "not applicable"
+  },
+  "save_transfer": {
+    "series_storage_key": "haimachi-series:chapter1-transfer",
+    "chapter1_export_type": "haimachi.chapter1.transfer",
+    "chapter2_accepts": [
+      "haimachi.chapter1.transfer",
+      "Chapter 1 full save JSON after official report"
+    ],
+    "applied_to": [
+      "initial NPC trust",
+      "rumor pressure",
+      "district state",
+      "faction state",
+      "prologue variation",
+      "MCP resource snapshot"
+    ],
+    "security_boundary": "Chapter 1 save is summarized and validated; it is not loaded as Chapter 2 GameState."
+  }
+}

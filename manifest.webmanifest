@@ -1,0 +1,68 @@
+{
+  "name": "灰街の巡察官と嘘の地図 第一部完結版",
+  "short_name": "灰街 完結版",
+  "description": "第一章から第二章・終局報告・エピローグまで遊べるブラウザ推理RPG。",
+  "lang": "ja-JP",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101419",
+  "theme_color": "#11151a",
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "previews_through/02_chapter2_inheritance_title.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "継承検出タイトル"
+    },
+    {
+      "src": "previews_through/04_series_record_panel.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "シリーズ記録"
+    },
+    {
+      "src": "previews_through/05_mobile_inheritance_title.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "スマートフォン継承画面"
+    }
+  ]
+}

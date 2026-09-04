@@ -1,0 +1,71 @@
+{
+  "product": "灰街の巡察官と嘘の地図",
+  "chapter": "第二章・完結編 黒雨の帳簿と白紙選挙／第一部終局",
+  "build": "chapter2-1.2.0-season1-complete",
+  "build_date": "2026-09-04",
+  "runtime": "HTML5 + CSS + Vanilla JavaScript + Canvas + Web Audio",
+  "external_runtime_dependencies": [],
+  "content": {
+    "maps": 10,
+    "districts": 7,
+    "npcs": 17,
+    "evidence": 52,
+    "deductions": 15,
+    "quests": 6,
+    "enemies": 5,
+    "endings": 15,
+    "difficulties": 3,
+    "report_combinations": "100以上 + 終局報告分岐"
+  },
+  "source": {
+    "gameplay_js_modules": 48,
+    "core_gameplay_lines": 14420,
+    "standalone_bytes": 602730,
+    "standalone_sha256": "26d440621552f5518d6b1cc1806a20ec4d692d35c2bc1d19c4d3589aa0e4b244"
+  },
+  "qa": {
+    "javascript_syntax": "pass: node --check all js modules",
+    "data_validation": "0 errors / 0 warnings",
+    "standalone_build": "pass",
+    "transfer_smoke": "pass",
+    "pwa_files": "pass: manifest, service worker, icons, offline page, registration script",
+    "season1_finale_smoke": "pass",
+    "screenshot_preview": "pass: final council, deduction, gray city battle, true ending, series record, mobile ending"
+  },
+  "pwa": {
+    "manifest": "manifest.webmanifest",
+    "service_worker": "sw.js",
+    "iphone_icon": "assets/icons/apple-touch-icon.png",
+    "install_requires": "HTTPS hosting for iPhone Add to Home Screen"
+  },
+  "save_transfer": {
+    "series_storage_key": "haimachi-series:chapter1-transfer",
+    "chapter1_export_type": "haimachi.chapter1.transfer",
+    "chapter2_accepts": [
+      "haimachi.chapter1.transfer",
+      "Chapter 1 full save JSON after official report"
+    ],
+    "applied_to": [
+      "initial NPC trust",
+      "rumor pressure",
+      "district state",
+      "faction state",
+      "prologue variation",
+      "MCP resource snapshot"
+    ],
+    "security_boundary": "Chapter 1 save is summarized and validated; it is not loaded as Chapter 2 GameState."
+  },
+  "version": "1.2.0-season1-complete",
+  "season1Complete": true,
+  "updated": "2026-09-04",
+  "finale": {
+    "final_maps": [
+      "council_core",
+      "true_map_square",
+      "outer_gate_epilogue"
+    ],
+    "final_enemy": "gray_city_record",
+    "best_ending": "ending_final_true_map",
+    "third_chapter_seed": "outer city / years later / parallel timeline patrol officer"
+  }
+}

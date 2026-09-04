@@ -398,7 +398,13 @@
       DOM.setText(DOM.id("rumorText"), `噂圧 ${Math.round(state.world.globalRumorPressure)}`);
       DOM.setText(DOM.id("objectiveText"), this.game.quests.trackedObjective().title);
       document.body.classList.toggle("no-rain", state.settings.rainOverlay === false);
-      DOM.id("rainGlass").style.opacity = String(0.04 + (this.game.world.currentMap?.ambient?.rain || 0) * .22);
+      document.body.classList.toggle("bright-exploration", state.settings.brightExploration !== false);
+      const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches || false;
+      const mobileViewport = window.innerWidth <= 768 || coarsePointer;
+      const brightExploration = state.settings.brightExploration !== false;
+      const rainBase = brightExploration ? (mobileViewport ? 0.012 : 0.02) : 0.04;
+      const rainScale = brightExploration ? (mobileViewport ? 0.07 : 0.10) : 0.22;
+      DOM.id("rainGlass").style.opacity = String(rainBase + (this.game.world.currentMap?.ambient?.rain || 0) * rainScale);
       this.maybeShowLevel();
     }
 
@@ -408,6 +414,7 @@
       document.body.classList.toggle("font-large", Boolean(s.fontLarge));
       document.body.classList.toggle("reduce-motion", Boolean(s.reducedMotion));
       document.body.classList.toggle("no-rain", s.rainOverlay === false);
+      document.body.classList.toggle("bright-exploration", s.brightExploration !== false);
       this.game.audio.configure(s);
     }
 

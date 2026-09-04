@@ -19,10 +19,10 @@
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  opacity: .2;
+  opacity: .12;
   background-image:
-    repeating-linear-gradient(103deg, transparent 0 18px, rgba(197,222,226,.34) 19px, transparent 20px 42px);
-  background-size: 120px 240px;
+    repeating-linear-gradient(103deg, transparent 0 24px, rgba(197,222,226,.24) 25px, transparent 26px 54px);
+  background-size: 150px 300px;
   animation: rainGlass 1.35s linear infinite;
   mix-blend-mode: screen;
 }
@@ -31,7 +31,7 @@
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  box-shadow: inset 0 0 150px 35px rgba(0, 0, 0, .58);
+  box-shadow: inset 0 0 110px 18px rgba(0, 0, 0, .38);
 }
 @keyframes rainGlass { from { background-position: 0 -240px; } to { background-position: 60px 0; } }
 
@@ -339,3 +339,34 @@
 }
 .ending-series-bridge h3 { margin: .15rem 0 .45rem; font-family: var(--font-display); }
 .ending-series-bridge p { margin: .25rem 0; line-height: 1.75; }
+
+
+/* Bright Exploration Patch v1.0
+   Keeps the rainy mood, but makes the mobile exploration screen readable. */
+body.bright-exploration #gameCanvas {
+  filter: brightness(1.16) contrast(1.08) saturate(1.03);
+}
+body.bright-exploration .rain-glass {
+  opacity: .10;
+  background-image:
+    repeating-linear-gradient(103deg, transparent 0 24px, rgba(197,222,226,.22) 25px, transparent 26px 54px);
+  background-size: 150px 300px;
+}
+body.bright-exploration .vignette {
+  box-shadow: inset 0 0 105px 18px rgba(0, 0, 0, .32);
+}
+@media (max-width: 768px), (pointer: coarse) {
+  body.bright-exploration #gameCanvas {
+    filter: brightness(1.26) contrast(1.10) saturate(1.04);
+  }
+  body.bright-exploration .rain-glass {
+    opacity: .07;
+    background-size: 180px 360px;
+  }
+  body.bright-exploration .vignette {
+    box-shadow: inset 0 0 78px 8px rgba(0, 0, 0, .24);
+  }
+}
+body.high-contrast.bright-exploration #gameCanvas {
+  filter: brightness(1.32) contrast(1.16) saturate(1.05);
+}

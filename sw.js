@@ -1,4 +1,4 @@
-const CACHE_NAME = "haimachi-season1-complete-v2";
+const CACHE_NAME = "haimachi-season1-complete-v3-bright";
 const CORE_ASSETS = [
   "./README_THROUGH_EXPERIENCE.md",
   "./assets/icons/apple-touch-icon.png",

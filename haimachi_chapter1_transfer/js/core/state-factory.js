@@ -163,6 +163,7 @@
           highContrast: false,
           fontLarge: false,
           rainOverlay: true,
+          brightExploration: true,
           autoSave: true,
           showHints: true,
         },

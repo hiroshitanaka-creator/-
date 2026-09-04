@@ -112,7 +112,7 @@
       const s = this.game.state.settings;
       return `<div class="settings-groups">
         <section class="settings-group"><h3>音と表示</h3>
-          ${this.toggle("music", "環境音・音楽", s.music)}${this.toggle("sound", "効果音", s.sound)}${this.toggle("rainOverlay", "雨の前景演出", s.rainOverlay)}${this.toggle("reducedMotion", "動きを減らす", s.reducedMotion)}${this.toggle("highContrast", "高コントラスト", s.highContrast)}${this.toggle("fontLarge", "文字を大きくする", s.fontLarge)}
+          ${this.toggle("music", "環境音・音楽", s.music)}${this.toggle("sound", "効果音", s.sound)}${this.toggle("rainOverlay", "雨の前景演出", s.rainOverlay)}${this.toggle("brightExploration", "明るい探索表示", s.brightExploration !== false)}${this.toggle("reducedMotion", "動きを減らす", s.reducedMotion)}${this.toggle("highContrast", "高コントラスト", s.highContrast)}${this.toggle("fontLarge", "文字を大きくする", s.fontLarge)}
           <label class="setting-row"><span><b>音量</b><small>0〜100%</small></span><input type="range" min="0" max="1" step="0.05" value="${s.volume}" data-setting-range="volume"></label>
         </section>
         <section class="settings-group"><h3>調査支援</h3>${this.toggle("showHints", "推理失敗時のヒント", s.showHints)}${this.toggle("autoSave", "オートセーブ", s.autoSave)}<p>現在の難易度：<b>${H.Data.Config.difficulty[s.difficulty].label}</b>（途中変更不可）</p></section>

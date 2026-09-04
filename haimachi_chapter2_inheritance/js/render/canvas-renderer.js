@@ -78,6 +78,67 @@
       this.drawWorld(map, state, dt);
     }
 
+
+    visibilityProfile(map) {
+      const settings = this.game.state?.settings || {};
+      const bright = settings.brightExploration !== false;
+      const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches || false;
+      const mobile = this.width <= 768 || coarsePointer;
+      const unsafe = Boolean(map && (((H.Data.Config.unsafeMaps || []).includes(map.id)) || map.id === "old_waterworks"));
+      if (!bright) {
+        return {
+          bright: false,
+          mobile,
+          unsafe,
+          groundLift: 0,
+          groundBottomShade: -18,
+          mapBaseLift: 0,
+          surfaceLift: 0,
+          obstacleLift: 0,
+          gridAlpha: 0.025,
+          scratchAlphaScale: 1,
+          lightingAlpha: unsafe ? 0.42 : 0.13,
+          lampCutoutAlpha: 0.85,
+          playerLightAlpha: 0.8,
+          playerLightRadius: 150,
+          edgeBase: 0.35,
+          edgePressure: 0.32,
+          rainAmountScale: 1,
+          rainAlphaScale: 1,
+          rainStrokeAlpha: 0.28,
+          fogScale: 1,
+          focusAlpha: 0,
+          interactableIdleAlpha: 0.38,
+          interactableSelectedAlpha: 0.95,
+        };
+      }
+      return {
+        bright: true,
+        mobile,
+        unsafe,
+        groundLift: mobile ? 20 : 12,
+        groundBottomShade: mobile ? 2 : -4,
+        mapBaseLift: mobile ? 18 : 10,
+        surfaceLift: mobile ? 22 : 14,
+        obstacleLift: mobile ? 16 : 10,
+        gridAlpha: mobile ? 0.075 : 0.055,
+        scratchAlphaScale: mobile ? 0.55 : 0.7,
+        lightingAlpha: unsafe ? (mobile ? 0.24 : 0.30) : (mobile ? 0.045 : 0.065),
+        lampCutoutAlpha: mobile ? 0.96 : 0.9,
+        playerLightAlpha: mobile ? 0.96 : 0.9,
+        playerLightRadius: mobile ? 235 : 195,
+        edgeBase: unsafe ? (mobile ? 0.22 : 0.27) : (mobile ? 0.09 : 0.14),
+        edgePressure: mobile ? 0.12 : 0.16,
+        rainAmountScale: mobile ? 0.58 : 0.72,
+        rainAlphaScale: mobile ? 0.52 : 0.68,
+        rainStrokeAlpha: mobile ? 0.16 : 0.20,
+        fogScale: mobile ? 0.65 : 0.8,
+        focusAlpha: mobile ? 0.95 : 0.78,
+        interactableIdleAlpha: mobile ? 0.64 : 0.52,
+        interactableSelectedAlpha: 1,
+      };
+    }
+
     drawTitleBackdrop() {
       const ctx = this.ctx;
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
@@ -96,11 +157,12 @@
 
     drawWorld(map, state, dt) {
       const ctx = this.ctx;
+      const profile = this.visibilityProfile(map);
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       ctx.clearRect(0, 0, this.width, this.height);
       const gradient = ctx.createLinearGradient(0, 0, 0, this.height);
-      gradient.addColorStop(0, map.colors.ground);
-      gradient.addColorStop(1, this.shade(map.colors.ground, -18));
+      gradient.addColorStop(0, this.shade(map.colors.ground, profile.groundLift));
+      gradient.addColorStop(1, this.shade(map.colors.ground, profile.groundBottomShade));
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, this.width, this.height);
 
@@ -119,13 +181,15 @@
       this.drawLighting(map, state);
       this.drawWeather(map, dt);
       this.drawEdgeMood(state, map);
+      this.drawFocusAids(map, state);
     }
 
     drawMapBase(map) {
       const ctx = this.ctx;
-      ctx.fillStyle = map.colors.ground;
+      const profile = this.visibilityProfile(map);
+      ctx.fillStyle = this.shade(map.colors.ground, profile.mapBaseLift);
       ctx.fillRect(0, 0, map.width, map.height);
-      ctx.strokeStyle = "rgba(255,255,255,.025)";
+      ctx.strokeStyle = `rgba(255,255,255,${profile.gridAlpha})`;
       ctx.lineWidth = 1;
       const step = 64;
       for (let x = 0; x <= map.width; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, map.height); ctx.stroke(); }
@@ -133,7 +197,8 @@
       for (let i = 0; i < 90; i += 1) {
         const x = (i * 157 + map.width * 0.13) % map.width;
         const y = (i * 283 + map.height * 0.21) % map.height;
-        ctx.strokeStyle = `rgba(10,14,16,${0.06 + (i % 4) * 0.015})`;
+        const alpha = (0.06 + (i % 4) * 0.015) * profile.scratchAlphaScale;
+        ctx.strokeStyle = `rgba(10,14,16,${alpha})`;
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(x + 18 + (i % 6) * 6, y + ((i % 3) - 1) * 12);
@@ -143,6 +208,7 @@
 
     drawSurfaces(map) {
       const ctx = this.ctx;
+      const profile = this.visibilityProfile(map);
       const colors = {
         road: map.colors.road,
         stone: map.colors.road,
@@ -157,9 +223,9 @@
         dock: "#55493b",
       };
       for (const surface of map.surfaces || []) {
-        ctx.fillStyle = colors[surface.type] || map.colors.road;
+        ctx.fillStyle = this.shade(colors[surface.type] || map.colors.road, profile.surfaceLift);
         ctx.fillRect(surface.x, surface.y, surface.w, surface.h);
-        ctx.strokeStyle = "rgba(15,18,18,.18)";
+        ctx.strokeStyle = profile.bright ? "rgba(235,232,210,.12)" : "rgba(15,18,18,.18)";
         ctx.strokeRect(surface.x + 0.5, surface.y + 0.5, surface.w - 1, surface.h - 1);
         if (["road", "stone", "plaza"].includes(surface.type)) this.drawPaving(surface);
         if (["water", "waterChannel"].includes(surface.type)) this.drawWater(surface);
@@ -203,6 +269,7 @@
 
     drawObstacles(map) {
       const ctx = this.ctx;
+      const profile = this.visibilityProfile(map);
       for (const obstacle of map.obstacles || []) {
         const palette = {
           wall: map.colors.wall,
@@ -218,22 +285,22 @@
           pipes: "#353b3c",
           weaponRack: "#413a32",
         };
-        const base = palette[obstacle.kind] || map.colors.wall;
-        ctx.fillStyle = "rgba(0,0,0,.25)";
+        const base = this.shade(palette[obstacle.kind] || map.colors.wall, profile.obstacleLift);
+        ctx.fillStyle = profile.bright ? "rgba(0,0,0,.18)" : "rgba(0,0,0,.25)";
         ctx.fillRect(obstacle.x + 8, obstacle.y + 10, obstacle.w, obstacle.h);
         const grad = ctx.createLinearGradient(obstacle.x, obstacle.y, obstacle.x, obstacle.y + obstacle.h);
-        grad.addColorStop(0, this.shade(base, 13)); grad.addColorStop(1, this.shade(base, -10));
+        grad.addColorStop(0, this.shade(base, 16)); grad.addColorStop(1, this.shade(base, -5));
         ctx.fillStyle = grad;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
-        ctx.strokeStyle = "rgba(202,177,112,.18)";
+        ctx.strokeStyle = profile.bright ? "rgba(226,211,168,.30)" : "rgba(202,177,112,.18)";
         ctx.lineWidth = 2;
         ctx.strokeRect(obstacle.x + 1, obstacle.y + 1, obstacle.w - 2, obstacle.h - 2);
         if (obstacle.kind === "shelf") this.drawShelf(obstacle);
         if (obstacle.kind === "crates") this.drawCrates(obstacle);
         if (obstacle.kind === "pipes") this.drawPipes(obstacle);
         if (obstacle.label && obstacle.w > 90 && obstacle.h > 54) {
-          ctx.fillStyle = "rgba(225,218,194,.55)";
-          ctx.font = "600 12px system-ui";
+          ctx.fillStyle = profile.bright ? "rgba(247,232,186,.82)" : "rgba(225,218,194,.55)";
+          ctx.font = "700 12px system-ui";
           ctx.textAlign = "center";
           ctx.fillText(obstacle.label, obstacle.x + obstacle.w / 2, obstacle.y + Math.min(24, obstacle.h / 2));
         }
@@ -338,23 +405,29 @@
 
     drawInteractables(map, state) {
       const ctx = this.ctx;
+      const profile = this.visibilityProfile(map);
       const nearest = this.game.interactions?.nearest;
       for (const item of this.game.interactions?.items || []) {
         if (item.type === "npc") continue;
         const selected = nearest?.id === item.id && nearest?.type === item.type;
-        const pulse = 1 + Math.sin(this.elapsed * 3.6) * 0.08;
-        const radius = Math.min(54, (item.radius || 60) * 0.45) * pulse;
+        const pulse = 1 + Math.sin(this.elapsed * 3.6) * (profile.bright ? 0.12 : 0.08);
+        const radius = Math.min(62, (item.radius || 60) * (profile.bright ? 0.52 : 0.45)) * pulse;
         ctx.save();
-        ctx.globalAlpha = item.available === false ? 0.26 : selected ? 0.95 : 0.38;
-        ctx.strokeStyle = item.type === "encounter" ? "#d2725e" : item.type === "exit" ? "#7fa8a5" : "#c5a35d";
-        ctx.lineWidth = selected ? 4 : 2;
+        ctx.globalAlpha = item.available === false ? 0.24 : selected ? profile.interactableSelectedAlpha : profile.interactableIdleAlpha;
+        ctx.strokeStyle = item.type === "encounter" ? "#e78470" : item.type === "exit" ? "#9bc9c4" : "#f0cc7a";
+        ctx.lineWidth = selected ? (profile.mobile ? 5 : 4) : (profile.bright ? 3 : 2);
+        if (profile.bright) {
+          ctx.shadowColor = item.type === "encounter" ? "rgba(231,132,112,.58)" : "rgba(240,204,122,.55)";
+          ctx.shadowBlur = selected ? 18 : 10;
+        }
         ctx.setLineDash(item.type === "hotspot" ? [5, 5] : []);
         ctx.beginPath(); ctx.arc(item.x, item.y, radius, 0, Math.PI * 2); ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = item.type === "encounter" ? "rgba(194,80,59,.22)" : "rgba(201,167,92,.12)";
-        ctx.beginPath(); ctx.arc(item.x, item.y, radius * .7, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = item.type === "encounter" ? "rgba(210,90,68,.24)" : "rgba(240,204,122,.16)";
+        ctx.beginPath(); ctx.arc(item.x, item.y, radius * .68, 0, Math.PI * 2); ctx.fill();
         if (selected) {
-          ctx.fillStyle = "rgba(239,226,188,.94)"; ctx.font = "700 12px system-ui"; ctx.textAlign = "center";
+          ctx.fillStyle = "rgba(255,246,217,.98)"; ctx.font = "800 13px system-ui"; ctx.textAlign = "center";
           ctx.fillText(item.type === "exit" ? "移" : item.type === "encounter" ? "噂" : "調", item.x, item.y + 4);
         }
         ctx.restore();
@@ -386,58 +459,74 @@
 
     drawPlayer(player) {
       const ctx = this.ctx;
+      const profile = this.visibilityProfile(this.game.world?.currentMap);
       const stride = player.moving ? Math.sin(this.elapsed * 11) * 3 : 0;
       ctx.save(); ctx.translate(player.x, player.y);
-      ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.beginPath(); ctx.ellipse(5, 23, 25, 10, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#1e3037"; ctx.beginPath(); ctx.moveTo(-18, 24); ctx.lineTo(-14, -8); ctx.quadraticCurveTo(0, -24, 14, -8); ctx.lineTo(19, 24); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = "#bc9350"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-12, 1); ctx.lineTo(13, 1); ctx.stroke();
-      ctx.fillStyle = "#b9a98c"; ctx.beginPath(); ctx.arc(0, -20, 12, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#172126"; ctx.fillRect(-13, -31, 26, 9); ctx.fillRect(-9, -38, 18, 9);
-      ctx.fillStyle = "#c7a056"; ctx.beginPath(); ctx.arc(15, 1, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "#24343b"; ctx.lineWidth = 5;
+      if (profile.bright) {
+        const pulse = 1 + Math.sin(this.elapsed * 4.4) * 0.035;
+        ctx.save();
+        ctx.globalAlpha = profile.focusAlpha * 0.92;
+        ctx.shadowColor = "rgba(240,204,122,.72)";
+        ctx.shadowBlur = profile.mobile ? 20 : 14;
+        ctx.strokeStyle = "rgba(240,204,122,.78)";
+        ctx.lineWidth = profile.mobile ? 3.5 : 2.6;
+        ctx.beginPath(); ctx.ellipse(0, 24, 32 * pulse, 13 * pulse, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
+      ctx.fillStyle = "rgba(0,0,0,.30)"; ctx.beginPath(); ctx.ellipse(5, 23, 25, 10, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-18, 24); ctx.lineTo(-14, -8); ctx.quadraticCurveTo(0, -24, 14, -8); ctx.lineTo(19, 24); ctx.closePath();
+      ctx.fillStyle = profile.bright ? "#27414b" : "#1e3037"; ctx.fill();
+      if (profile.bright) { ctx.strokeStyle = "rgba(236,224,185,.38)"; ctx.lineWidth = 2; ctx.stroke(); }
+      ctx.strokeStyle = profile.bright ? "#e3b764" : "#bc9350"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-12, 1); ctx.lineTo(13, 1); ctx.stroke();
+      ctx.fillStyle = profile.bright ? "#d2c09e" : "#b9a98c"; ctx.beginPath(); ctx.arc(0, -20, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = profile.bright ? "#20333a" : "#172126"; ctx.fillRect(-13, -31, 26, 9); ctx.fillRect(-9, -38, 18, 9);
+      ctx.fillStyle = profile.bright ? "#f0cc7a" : "#c7a056"; ctx.beginPath(); ctx.arc(15, 1, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = profile.bright ? "#35515c" : "#24343b"; ctx.lineWidth = 5;
       ctx.beginPath(); ctx.moveTo(-8, 22); ctx.lineTo(-10 + stride, 34); ctx.moveTo(8, 22); ctx.lineTo(10 - stride, 34); ctx.stroke();
       ctx.restore();
     }
 
     drawLighting(map) {
       const ctx = this.ctx;
+      const profile = this.visibilityProfile(map);
       ctx.save();
-      ctx.fillStyle = (H.Data.Config.unsafeMaps || []).includes(map.id) ? "rgba(4,8,10,.42)" : "rgba(8,13,16,.13)";
+      ctx.fillStyle = `rgba(${profile.unsafe ? "4,8,10" : "8,13,16"},${profile.lightingAlpha})`;
       ctx.fillRect(0, 0, this.width, this.height);
       ctx.globalCompositeOperation = "destination-out";
       for (const deco of map.decorations || []) {
         if (deco.type !== "lamp" && deco.type !== "crystal") continue;
         const x = deco.x - this.camera.x, y = deco.y - this.camera.y;
-        const r = deco.radius || (deco.type === "crystal" ? 90 : 145);
+        const r = (deco.radius || (deco.type === "crystal" ? 90 : 145)) * (profile.bright ? 1.12 : 1);
         const gradient = ctx.createRadialGradient(x, y, 10, x, y, r);
-        gradient.addColorStop(0, "rgba(0,0,0,.85)"); gradient.addColorStop(1, "rgba(0,0,0,0)");
+        gradient.addColorStop(0, `rgba(0,0,0,${profile.lampCutoutAlpha})`); gradient.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
       }
       const player = this.game.state.player;
       const px = player.x - this.camera.x, py = player.y - this.camera.y;
-      const pg = ctx.createRadialGradient(px, py, 20, px, py, 150);
-      pg.addColorStop(0, "rgba(0,0,0,.8)"); pg.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(px, py, 150, 0, Math.PI * 2); ctx.fill();
+      const pg = ctx.createRadialGradient(px, py, 18, px, py, profile.playerLightRadius);
+      pg.addColorStop(0, `rgba(0,0,0,${profile.playerLightAlpha})`); pg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(px, py, profile.playerLightRadius, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
 
     drawWeather(map, dt) {
       const ctx = this.ctx;
-      const rainAmount = this.game.state?.settings?.rainOverlay === false ? 0 : (map.ambient?.rain || 0);
+      const profile = this.visibilityProfile(map);
+      const rainAmount = this.game.state?.settings?.rainOverlay === false ? 0 : (map.ambient?.rain || 0) * profile.rainAmountScale;
       if (rainAmount > 0.05) {
-        ctx.save(); ctx.strokeStyle = "rgba(174,201,207,.28)"; ctx.lineWidth = 1;
+        ctx.save(); ctx.strokeStyle = `rgba(174,201,207,${profile.rainStrokeAlpha})`; ctx.lineWidth = 1;
         const count = Math.floor(this.rain.length * rainAmount);
         for (let i = 0; i < count; i += 1) {
           const drop = this.rain[i];
           drop.y += drop.speed * dt; drop.x -= drop.speed * .12 * dt;
           if (drop.y > this.height + 30) { drop.y = -30; drop.x = (drop.x + 193) % this.width; }
           if (drop.x < -20) drop.x = this.width + 20;
-          ctx.globalAlpha = drop.alpha;
+          ctx.globalAlpha = drop.alpha * profile.rainAlphaScale;
           ctx.beginPath(); ctx.moveTo(drop.x, drop.y); ctx.lineTo(drop.x - drop.length * .18, drop.y + drop.length); ctx.stroke();
         }
         ctx.restore();
       }
-      const fogAmount = map.ambient?.fog || 0;
+      const fogAmount = (map.ambient?.fog || 0) * profile.fogScale;
       if (fogAmount > 0.01) {
         ctx.save();
         for (const cloud of this.fog) {
@@ -453,11 +542,45 @@
 
     drawEdgeMood(state, map) {
       const ctx = this.ctx;
+      const profile = this.visibilityProfile(map);
       const pressure = state.world.globalRumorPressure / 100;
       const g = ctx.createRadialGradient(this.width / 2, this.height / 2, Math.min(this.width, this.height) * .25, this.width / 2, this.height / 2, Math.max(this.width, this.height) * .72);
       g.addColorStop(0, "rgba(0,0,0,0)");
-      g.addColorStop(1, `rgba(${(H.Data.Config.unsafeMaps || []).includes(map.id) ? "74,20,17" : "5,9,12"},${0.35 + pressure * .32})`);
+      const alpha = Util.clamp(profile.edgeBase + pressure * profile.edgePressure, 0, profile.bright ? 0.44 : 0.72);
+      g.addColorStop(1, `rgba(${profile.unsafe ? "74,20,17" : "5,9,12"},${alpha})`);
       ctx.fillStyle = g; ctx.fillRect(0, 0, this.width, this.height);
+    }
+
+
+    drawFocusAids(map, state) {
+      const profile = this.visibilityProfile(map);
+      if (!profile.bright || !state?.player) return;
+      const ctx = this.ctx;
+      const pulse = 1 + Math.sin(this.elapsed * 4.2) * 0.045;
+      const px = state.player.x - this.camera.x;
+      const py = state.player.y - this.camera.y;
+      ctx.save();
+      ctx.globalAlpha = profile.focusAlpha;
+      ctx.shadowColor = "rgba(240,204,122,.58)";
+      ctx.shadowBlur = profile.mobile ? 16 : 11;
+      ctx.strokeStyle = "rgba(240,204,122,.72)";
+      ctx.lineWidth = profile.mobile ? 3 : 2;
+      ctx.beginPath(); ctx.ellipse(px, py + 24, 35 * pulse, 14 * pulse, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+
+      const nearest = this.game.interactions?.nearest;
+      if (!nearest || nearest.type === "npc") return;
+      const ix = nearest.x - this.camera.x;
+      const iy = nearest.y - this.camera.y;
+      if (ix < -80 || iy < -80 || ix > this.width + 80 || iy > this.height + 80) return;
+      ctx.save();
+      ctx.globalAlpha = profile.mobile ? 0.9 : 0.72;
+      ctx.shadowColor = nearest.type === "encounter" ? "rgba(231,132,112,.65)" : "rgba(240,204,122,.65)";
+      ctx.shadowBlur = 18;
+      ctx.strokeStyle = nearest.type === "encounter" ? "rgba(231,132,112,.95)" : "rgba(240,204,122,.95)";
+      ctx.lineWidth = profile.mobile ? 4 : 3;
+      ctx.beginPath(); ctx.arc(ix, iy, 38 + Math.sin(this.elapsed * 5.0) * 3, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
     }
 
     drawDebug(map) {
@@ -469,7 +592,15 @@
     }
 
     shade(hex, amount) {
-      const match = String(hex).match(/^#?([0-9a-f]{6})$/i);
+      const text = String(hex).trim();
+      const rgbMatch = text.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+      if (rgbMatch) {
+        const r = Util.clamp(Number(rgbMatch[1]) + amount, 0, 255);
+        const g = Util.clamp(Number(rgbMatch[2]) + amount, 0, 255);
+        const b = Util.clamp(Number(rgbMatch[3]) + amount, 0, 255);
+        return `rgb(${r},${g},${b})`;
+      }
+      const match = text.match(/^#?([0-9a-f]{6})$/i);
       if (!match) return hex;
       const value = parseInt(match[1], 16);
       const r = Util.clamp((value >> 16) + amount, 0, 255);

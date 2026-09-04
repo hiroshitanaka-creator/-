@@ -1,4 +1,4 @@
-const CACHE_NAME = "haimachi-chapter2-pwa-v1.1.0-inheritance";
+const CACHE_NAME = "haimachi-chapter2-pwa-v1.2.0-bright";
 const PRECACHE_URLS = [
   "./",
   "./index.html",

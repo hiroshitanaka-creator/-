@@ -1,0 +1,105 @@
+@media (max-width: 1020px) {
+  .hud { grid-template-columns: 1fr auto; }
+  .hud-world { grid-column: 1 / -1; grid-row: 2; justify-self: center; }
+  .objective-chip { grid-column: 2; grid-row: 1; }
+  .meter-chip { display: none; }
+  .dialogue-panel { grid-template-columns: 125px 1fr; }
+  .combat-actions { grid-template-columns: repeat(3,1fr); }
+  .report-grid { grid-template-columns: 1fr; }
+  .report-card { width: min(790px,98vw); }
+}
+
+@media (max-width: 820px), (pointer: coarse) and (max-width: 1100px) {
+  .touch-controls { display: block; }
+  .quick-bar { left: 50%; right: auto; bottom: max(112px, calc(var(--safe-bottom) + 100px)); transform: translateX(-50%); width: max-content; }
+  .quick-bar button { min-width: 44px; }
+  .quick-bar button:nth-child(4), .quick-bar button:nth-child(5), .quick-bar button:nth-child(6) { display: none; }
+  .interaction-prompt { bottom: max(178px, calc(var(--safe-bottom) + 166px)); }
+  .location-banner { left: 50%; bottom: max(198px, calc(var(--safe-bottom) + 186px)); transform: translateX(-50%); width: min(72vw,430px); max-width: none; text-align: center; border-left: 0; border-bottom: 2px solid var(--brass-1); padding: 0 0 .45rem; }
+  .location-banner.is-active { transform: translateX(-50%); }
+  .notification-stack { left: 50%; right: auto; top: max(252px, calc(var(--safe-top) + 232px)); bottom: auto; transform: translateX(-50%); }
+  .notification-stack .notification:not(:last-child) { display: none; }
+  .drawer-panel { width: 100%; height: min(88dvh, 760px); top: auto; bottom: 0; padding: 18px max(16px,var(--safe-right)) max(18px,var(--safe-bottom)) max(16px,var(--safe-left)); border-radius: 14px 14px 0 0; animation-name: drawerUp; }
+  @keyframes drawerUp { from { transform: translateY(40px); opacity: .5; } }
+  .drawer-content { height: calc(100% - 112px); }
+  .deduction-layout { grid-template-columns: 1fr; }
+  .claim-list { grid-template-columns: repeat(2,minmax(0,1fr)); max-height: 180px; overflow: auto; }
+  .deduction-slots { grid-template-columns: 1fr; }
+  .pool-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .map-board { min-height: 420px; }
+}
+
+@media (max-width: 680px) {
+  body { font-size: 14px; }
+  .title-screen { align-items: flex-start; }
+  .title-card { max-height: none; padding: 26px 20px 28px; }
+  .title-card h1 { font-size: clamp(2.2rem,12vw,3.4rem); }
+  .title-copy { line-height: 1.8; }
+  .title-actions { grid-template-columns: 1fr; }
+  .hud { inset: max(8px,var(--safe-top)) max(8px,var(--safe-right)) auto max(8px,var(--safe-left)); gap: 6px; }
+  .portrait-chip { min-width: 112px; padding: .32rem .45rem; }
+  .portrait-mark { width: 29px; height: 29px; }
+  .portrait-chip small { display: none; }
+  .objective-chip { max-width: 55vw; padding: .42rem .55rem; }
+  .objective-chip b { max-width: 42vw; font-size: .68rem; }
+  .objective-chip .objective-icon { display: none; }
+  .hud-world { transform: scale(.88); transform-origin: top center; }
+  .touch-stick { width: 108px; height: 108px; left: max(14px,var(--safe-left)); }
+  .touch-knob { width: 48px; height: 48px; }
+  .touch-actions { right: max(14px,var(--safe-right)); gap: .4rem; }
+  .touch-button { width: 58px; height: 58px; }
+  .touch-primary { width: 74px; height: 74px; }
+  .quick-bar { gap: 1px; padding: 4px; }
+  .quick-bar button { min-width: 42px; padding: .2rem; }
+  .story-frame { padding: 22px 18px; }
+  .story-body { min-height: 280px; }
+  .dialogue-overlay { padding: 8px; align-items: flex-end; }
+  .dialogue-panel { display: block; width: 100%; max-height: 88dvh; padding: 14px; overflow: auto; border-radius: 12px 12px 0 0; }
+  .dialogue-portrait { float: left; width: 78px; min-height: 96px; margin: 0 .8rem .4rem 0; }
+  .dialogue-portrait span { font-size: 2.2rem; }
+  .dialogue-content { padding: 0; overflow: visible; }
+  .dialogue-content h2 { font-size: 1.25rem; }
+  .dialogue-text { min-height: 80px; clear: both; margin-top: .7rem; }
+  .dialogue-choices { grid-template-columns: 1fr; }
+  .investigation-panel { padding: 18px 14px; }
+  .investigation-visual { height: 150px; }
+  .investigation-actions { grid-template-columns: 1fr; }
+  .combat-stage { padding: 8px; }
+  .combat-header { display: block; }
+  .combat-counters { margin-top: .45rem; }
+  .combat-visual { height: 220px; }
+  .combat-actions { grid-template-columns: repeat(2,1fr); }
+  .combat-action { min-height: 64px; }
+  .combat-picker-grid { grid-template-columns: 1fr; }
+  .level-card { padding: 20px 14px; }
+  .level-choices { grid-template-columns: 1fr; }
+  .report-card { padding: 18px 13px; }
+  .ending-summary { grid-template-columns: 1fr; }
+  .credits-columns { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .evidence-grid, .people-grid { grid-template-columns: 1fr; }
+  .claim-list { grid-template-columns: 1fr; }
+  .pool-grid { grid-template-columns: 1fr; }
+  .map-node { width: 104px; min-height: 64px; }
+}
+
+@media (max-height: 580px) and (orientation: landscape) {
+  .hud-world { display: none; }
+  .title-card { max-height: 96dvh; }
+  .touch-stick { width: 96px; height: 96px; }
+  .touch-actions { bottom: 10px; }
+  .touch-button { width: 54px; height: 54px; }
+  .touch-primary { width: 68px; height: 68px; }
+  .quick-bar { display: none; }
+  .interaction-prompt { display: none !important; }
+  .location-banner { bottom: 86px; width: min(54vw,430px); }
+  .notification-stack { top: max(88px, calc(var(--safe-top) + 76px)); width: min(320px, 46vw); }
+  .dialogue-panel { min-height: 260px; max-height: 95dvh; }
+  .combat-visual { height: 190px; }
+  .combat-log { max-height: 72px; }
+}
+
+body.font-large { font-size: 18px; }
+body.high-contrast { --paper-0: #fff4d6; --paper-ink: #101010; --ink-0: #ffffff; --night-2: #050709; --border-dark: rgba(255,255,255,.52); }
+body.no-rain .rain-glass { display: none; }
+body.reduce-motion .rain-glass { animation: none; opacity: .09; }

@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#11151a">
+  <meta name="description" content="噂が地図と現実を歪める都市を調査する、探索・推理・関係性・戦術を融合したブラウザRPG。">
+  <link rel="icon" href="data:,">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="灰街 第二章">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>灰街の巡察官と嘘の地図 — 第二章・完結編「黒雨の帳簿と白紙選挙」</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div id="app" class="app-shell" data-mode="title">
+    <canvas id="gameCanvas" width="1280" height="720" aria-label="灰街の探索画面"></canvas>
+
+    <div id="rainGlass" class="rain-glass" aria-hidden="true"></div>
+    <div id="vignette" class="vignette" aria-hidden="true"></div>
+
+    <section id="titleScreen" class="screen-overlay title-screen is-visible" aria-label="タイトル画面">
+      <div class="title-backdrop" aria-hidden="true">
+        <div class="title-map-lines"></div>
+        <div class="title-lamp title-lamp-a"></div>
+        <div class="title-lamp title-lamp-b"></div>
+      </div>
+      <div class="title-card paper-panel">
+        <p class="eyebrow">A browser investigation RPG</p>
+        <h1><span>灰街の巡察官</span><small>と嘘の地図</small></h1>
+        <p class="chapter-label">第二章・完結編　黒雨の帳簿と白紙選挙</p>
+        <p class="title-copy">
+          第一章の真実を利用して、黒雨が帳簿と地図を濡らし始めた。<br>
+          巡察記録官として、名前・公債・影地図・黒鐘・白紙票を結び、最後に「灰街そのもの」の嘘と対峙せよ。
+        </p>
+
+        <label class="field-label" for="playerName">巡察官の名前</label>
+        <input id="playerName" class="text-input" maxlength="12" value="レイ" autocomplete="off">
+
+        <fieldset class="difficulty-select">
+          <legend>調査難易度</legend>
+          <label><input type="radio" name="difficulty" value="story"> <span><b>物語重視</b><small>噂の拡散が緩やか。期限による失敗なし。</small></span></label>
+          <label><input type="radio" name="difficulty" value="investigator" checked> <span><b>巡察官</b><small>標準。時間と街の状態を読みながら調査する。</small></span></label>
+          <label><input type="radio" name="difficulty" value="severe"> <span><b>灰街の夜</b><small>噂の拡散が速く、誤判断の影響が大きい。</small></span></label>
+        </fieldset>
+
+        <section id="inheritancePanel" class="inheritance-panel" aria-live="polite">
+          <p class="eyebrow">第一章からの継承</p>
+          <div id="inheritanceStatus" class="inheritance-status">
+            第一章の正式報告データを読み込むと、第二章の初期信頼・噂圧・派閥状態が変化します。章間ブリーフィングとシリーズ記録画面も生成されます。
+          </div>
+          <div class="inheritance-actions">
+            <button id="importChapter1Button" class="button button-secondary" type="button">第一章セーブ / 継承JSONを読み込む</button>
+            <input id="chapter1TransferInput" type="file" accept="application/json" hidden>
+            <button id="clearChapter1TransferButton" class="button button-ghost" type="button" disabled>継承解除</button>
+          </div>
+        </section>
+
+        <div class="title-actions title-actions-three">
+          <button id="newGameButton" class="button button-secondary button-large">第二章だけで始める</button>
+          <button id="inheritGameButton" class="button button-primary button-large" disabled>第一章を継承して始める</button>
+          <button id="continueButton" class="button button-secondary button-large" disabled>続きから</button>
+        </div>
+        <div class="title-links">
+          <button id="titleSettingsButton" class="button button-ghost">設定</button>
+          <button id="titleCreditsButton" class="button button-ghost">遊び方・制作情報</button>
+        </div>
+        <p class="save-note">オートセーブ対応。データはこのブラウザ内に保存されます。</p>
+      </div>
+    </section>
+
+    <section id="storyScreen" class="screen-overlay story-screen" aria-label="物語画面" aria-hidden="true">
+      <div class="story-frame">
+        <p id="storyKicker" class="eyebrow"></p>
+        <h2 id="storyTitle"></h2>
+        <div id="storyBody" class="story-body"></div>
+        <div class="story-progress"><span id="storyProgressFill"></span></div>
+        <div class="story-actions">
+          <button id="storySkipButton" class="button button-ghost">スキップ</button>
+          <button id="storyNextButton" class="button button-primary">次へ</button>
+        </div>
+      </div>
+    </section>
+
+    <header id="hud" class="hud is-hidden" aria-label="ゲーム情報">
+      <div class="hud-cluster hud-status">
+        <div class="portrait-chip" id="rankChip"><span class="portrait-mark">巡</span><span><b id="hudPlayerName">レイ</b><small id="hudRank">見習い記録官</small></span></div>
+        <div class="meter-chip" title="心の余裕。噂との対峙で0になると撤退します。">
+          <span>平静</span><div class="meter"><i id="composureFill"></i></div><b id="composureText">100</b>
+        </div>
+        <div class="meter-chip" title="市民があなたの報告を信じる度合いです。">
+          <span>信頼</span><div class="meter brass"><i id="trustFill"></i></div><b id="trustText">50</b>
+        </div>
+      </div>
+
+      <div class="hud-cluster hud-world">
+        <button id="timeButton" class="time-chip" aria-label="時刻と街の状態を確認">
+          <span id="dayText">第一日</span><b id="segmentText">朝</b><small id="weatherText">灰雨</small>
+        </button>
+        <div class="stability-chip"><span>街の安定</span><b id="stabilityText">68</b><small id="rumorText">噂圧 31</small></div>
+      </div>
+
+      <button id="objectiveChip" class="objective-chip" aria-label="現在の目的を開く">
+        <span class="objective-icon">◇</span>
+        <span><small>現在の目的</small><b id="objectiveText">ナイラから第二監査命令を受ける</b></span>
+      </button>
+    </header>
+
+    <nav id="quickBar" class="quick-bar is-hidden" aria-label="ゲームメニュー">
+      <button data-panel="journal" title="巡察記録 J"><span>記</span><small>記録</small></button>
+      <button data-panel="evidence" title="証拠 V"><span>証</span><small>証拠</small></button>
+      <button data-panel="deduction" title="推理盤 B"><span>理</span><small>推理</small></button>
+      <button data-panel="map" title="地図 M"><span>図</span><small>地図</small></button>
+      <button data-panel="people" title="人物 P"><span>人</span><small>人物</small></button>
+      <button data-panel="series" title="シリーズ記録 L"><span>継</span><small>継承</small></button>
+      <button data-panel="settings" title="設定 Esc"><span>歯</span><small>設定</small></button>
+    </nav>
+
+    <div id="interactionPrompt" class="interaction-prompt is-hidden" role="status" aria-live="polite">
+      <kbd id="interactionKey">E</kbd><span id="interactionText">調べる</span>
+    </div>
+
+    <div id="locationBanner" class="location-banner" aria-live="polite">
+      <small id="locationDistrict">中央区</small><strong id="locationName">灰時計広場</strong><span id="locationFlavor">雨は石畳の記憶を薄く削っている。</span>
+    </div>
+
+    <div id="notificationStack" class="notification-stack" aria-live="polite"></div>
+
+    <aside id="sideDrawer" class="side-drawer" aria-hidden="true">
+      <div class="drawer-scrim" data-close-drawer></div>
+      <section class="drawer-panel paper-panel">
+        <header class="drawer-header">
+          <div><p class="eyebrow" id="drawerEyebrow">巡察記録</p><h2 id="drawerTitle">記録帳</h2></div>
+          <button class="icon-button" data-close-drawer aria-label="閉じる">×</button>
+        </header>
+        <nav class="drawer-tabs" aria-label="記録帳のタブ">
+          <button data-panel="journal">記録</button>
+          <button data-panel="evidence">証拠</button>
+          <button data-panel="deduction">推理盤</button>
+          <button data-panel="map">地図</button>
+          <button data-panel="people">人物</button>
+          <button data-panel="series">シリーズ記録</button>
+          <button data-panel="settings">設定</button>
+        </nav>
+        <div id="drawerContent" class="drawer-content"></div>
+      </section>
+    </aside>
+
+    <section id="dialogueOverlay" class="modal-overlay dialogue-overlay" aria-hidden="true">
+      <div class="dialogue-panel paper-panel">
+        <div class="dialogue-portrait" id="dialoguePortrait"><span id="dialogueInitial">?</span></div>
+        <div class="dialogue-content">
+          <header><div><p id="dialogueRole" class="eyebrow"></p><h2 id="dialogueSpeaker"></h2></div><div id="dialogueTrust" class="trust-badge"></div></header>
+          <div id="dialogueText" class="dialogue-text"></div>
+          <div id="dialogueChoices" class="dialogue-choices"></div>
+          <footer><button id="dialogueCloseButton" class="button button-ghost">会話を終える</button></footer>
+        </div>
+      </div>
+    </section>
+
+    <section id="investigationOverlay" class="modal-overlay investigation-overlay" aria-hidden="true">
+      <div class="investigation-panel paper-panel">
+        <header><div><p class="eyebrow">現場調査</p><h2 id="investigationTitle"></h2></div><button id="investigationCloseButton" class="icon-button" aria-label="閉じる">×</button></header>
+        <div id="investigationVisual" class="investigation-visual"></div>
+        <p id="investigationDescription" class="investigation-description"></p>
+        <div id="investigationActions" class="investigation-actions"></div>
+        <div id="investigationResult" class="investigation-result"></div>
+      </div>
+    </section>
+
+    <section id="combatOverlay" class="modal-overlay combat-overlay" aria-hidden="true">
+      <div class="combat-stage">
+        <header class="combat-header">
+          <div><p class="eyebrow">噂との対峙</p><h2 id="enemyName"></h2><p id="enemyClaim" class="enemy-claim"></p></div>
+          <div class="combat-counters"><span>群衆不安 <b id="panicText">0</b></span><span>集中 <b id="focusText">2</b></span><span>権限 <b id="authorityText">2</b></span></div>
+        </header>
+        <div class="combat-visual">
+          <canvas id="combatCanvas" width="900" height="320"></canvas>
+          <div class="enemy-integrity"><span>噂の強度</span><div class="meter danger"><i id="enemyIntegrityFill"></i></div><b id="enemyIntegrityText"></b></div>
+        </div>
+        <div id="combatLog" class="combat-log"></div>
+        <div id="combatActions" class="combat-actions"></div>
+        <div id="combatPicker" class="combat-picker is-hidden"></div>
+      </div>
+    </section>
+
+    <section id="levelOverlay" class="modal-overlay level-overlay" aria-hidden="true">
+      <div class="level-card paper-panel">
+        <p class="eyebrow">巡察技能の成長</p>
+        <h2>次に磨く技能を選ぶ</h2>
+        <p>選択は会話・探索・噂との対峙で異なる突破口を作ります。</p>
+        <div id="levelChoices" class="level-choices"></div>
+      </div>
+    </section>
+
+    <section id="reportOverlay" class="modal-overlay report-overlay" aria-hidden="true">
+      <div class="report-card paper-panel">
+        <header><div><p class="eyebrow">地図院提出用・正式報告書</p><h2>事件を街の記録へ固定する</h2></div><button id="reportCloseButton" class="icon-button" aria-label="閉じる">×</button></header>
+        <p class="report-warning">ここで選んだ内容は、住民の認識・派閥・通行可能な地図を変えます。真相だけでなく、公開方法も判断してください。</p>
+        <div id="reportReadiness" class="report-readiness"></div>
+        <div class="report-grid">
+          <fieldset><legend>失踪の直接原因</legend><div id="reportCauseChoices"></div></fieldset>
+          <fieldset><legend>主要な責任主体</legend><div id="reportResponsibleChoices"></div></fieldset>
+          <fieldset><legend>市民への公開方針</legend><div id="reportPolicyChoices"></div></fieldset>
+        </div>
+        <label class="report-note-label">巡察官の付記<textarea id="reportNote" maxlength="240" placeholder="この事件を、あなたはどのように記録しますか。"></textarea></label>
+        <footer><button id="submitReportButton" class="button button-primary button-large">報告書を確定する</button></footer>
+      </div>
+    </section>
+
+    <section id="endingOverlay" class="screen-overlay ending-screen" aria-hidden="true">
+      <div class="ending-map" aria-hidden="true"></div>
+      <div class="ending-card paper-panel">
+        <p id="endingKicker" class="eyebrow"></p>
+        <h2 id="endingTitle"></h2>
+        <div id="endingBody" class="ending-body"></div>
+        <div id="endingSummary" class="ending-summary"></div>
+        <div class="ending-actions">
+          <button id="endingContinueButton" class="button button-secondary">結末後の街を歩く</button>
+          <button id="endingNewGameButton" class="button button-primary">別の巡察を始める</button>
+          <button id="endingExportButton" class="button button-ghost">巡察記録を書き出す</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="creditsOverlay" class="modal-overlay credits-overlay" aria-hidden="true">
+      <div class="credits-card paper-panel">
+        <header><div><p class="eyebrow">遊び方・制作情報</p><h2>灰街を歩く前に</h2></div><button id="creditsCloseButton" class="icon-button">×</button></header>
+        <div class="credits-columns">
+          <div><h3>基本操作</h3><dl class="controls-list"><dt>WASD / 矢印</dt><dd>移動</dd><dt>E / Space</dt><dd>会話・調査・移動</dd><dt>J / V / B / M / P</dt><dd>各記録画面</dd><dt>Esc</dt><dd>画面を閉じる・設定</dd></dl></div>
+          <div><h3>ゲームの核</h3><p>証拠を集めるだけでは解決できません。黒雨、救済帳簿、公債、影地図、黒鐘、証人保護を推理盤で結び、最後に「どの真実をどの順序で公開するか」を選びます。</p><h3>スマートフォン</h3><p>画面左下の仮想方向キーと右下の調査ボタンで操作できます。記録画面は下部メニューから開けます。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="touchControls" class="touch-controls is-hidden" aria-label="タッチ操作">
+      <div class="touch-stick" id="touchStick"><div id="touchKnob" class="touch-knob"></div></div>
+      <div class="touch-actions">
+        <button id="touchInteract" class="touch-button touch-primary"><span>調</span><small>調べる</small></button>
+        <button id="touchJournal" class="touch-button"><span>記</span><small>記録</small></button>
+      </div>
+    </div>
+
+    <div id="debugOverlay" class="debug-overlay is-hidden"></div>
+  </div>
+
+  <script src="js/namespace.js"></script>
+  <script src="js/core/utilities.js"></script>
+  <script src="js/core/event-bus.js"></script>
+  <script src="js/core/rng.js"></script>
+  <script src="js/core/conditions.js"></script>
+  <script src="js/core/state-factory.js"></script>
+  <script src="js/core/save-manager.js"></script>
+  <script src="js/core/audio-manager.js"></script>
+  <script src="js/core/input-manager.js"></script>
+
+  <script src="js/data/config.js"></script>
+  <script src="js/data/evidence.js"></script>
+  <script src="js/data/npcs.js"></script>
+  <script src="js/data/maps.js"></script>
+  <script src="js/data/dialogues.js"></script>
+  <script src="js/data/deductions.js"></script>
+  <script src="js/data/quests.js"></script>
+  <script src="js/data/enemies.js"></script>
+  <script src="js/data/story.js"></script>
+  <script src="js/data/endings.js"></script>
+
+  <script src="js/systems/effect-system.js"></script>
+  <script src="js/systems/time-system.js"></script>
+  <script src="js/systems/world-system.js"></script>
+  <script src="js/systems/movement-system.js"></script>
+  <script src="js/systems/interaction-system.js"></script>
+  <script src="js/systems/evidence-system.js"></script>
+  <script src="js/systems/dialogue-system.js"></script>
+  <script src="js/systems/deduction-system.js"></script>
+  <script src="js/systems/quest-system.js"></script>
+  <script src="js/systems/rumor-system.js"></script>
+  <script src="js/systems/combat-system.js"></script>
+  <script src="js/systems/progression-system.js"></script>
+  <script src="js/systems/ending-system.js"></script>
+  <script src="js/systems/mcp-bridge.js"></script>
+  <script src="js/systems/chapter-transfer.js"></script>
+
+  <script src="js/render/canvas-renderer.js"></script>
+  <script src="js/render/combat-renderer.js"></script>
+
+  <script src="js/ui/dom.js"></script>
+  <script src="js/ui/panels.js"></script>
+  <script src="js/ui/deduction-board.js"></script>
+  <script src="js/ui/dialogue-panel.js"></script>
+  <script src="js/ui/combat-panel.js"></script>
+  <script src="js/ui/report-panel.js"></script>
+  <script src="js/ui/touch-controls.js"></script>
+  <script src="js/ui/ui-manager.js"></script>
+  <script src="js/systems/season1-finale-update.js"></script>
+
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/pwa-register.js"></script>
+</body>
+</html>
